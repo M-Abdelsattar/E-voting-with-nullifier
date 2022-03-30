@@ -15,4 +15,4 @@ hash <== mimcAttestation.outs[0];
 
 }
 
-component main =HashProof();
+component main{public[msg]} =HashProof();

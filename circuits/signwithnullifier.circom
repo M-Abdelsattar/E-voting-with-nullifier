@@ -3,50 +3,24 @@ pragma circom 2.0.3;
 include "../circomlib/circuits/mimcsponge.circom";
 include "timelockpuzzlegenerator.circom";
 
-/*
-  Inputs:
-  - hash1 (pub)
-  - hash2 (pub)
-  - hash3 (pub)
-  - msg (pub)
-  - secret
-
-  Intermediate values:
-  - x (supposed to be hash of secret)
-
-  Output:
-  - msgAttestation
-
-  Prove:
-  - mimc(secret) == x
-  - (x - hash1)(x - hash2)(x - hash3) == 0
-  - msgAttestation == mimc(msg, secret)
-*/
-
 template Main() {
-/*signal input x;
-signal input y;
-signal output z;
-
-z<==x+y;
-*/
   signal input secret;
   signal input r;
   signal input hash1;
   signal input hash2;
   signal input hash3;
   signal input msg;
-  signal input encryptedmsg;
   signal input n;
   signal input phi;
   signal input t;
   signal input a;
+  signal input puzzle;
 
   signal x;
 
   signal output msgAttestation;
   signal output nullifierAttestation;
-  signal output puzzle;
+
   component mimcSecret = MiMCSponge(1, 220, 1);
   mimcSecret.ins[0] <== secret;
   mimcSecret.k <== 0;
@@ -62,8 +36,16 @@ z<==x+y;
   mimcnullifierAttestation.k <== 0;
   nullifierAttestation<==mimcnullifierAttestation.outs[0];
 
+  component timeLockedPuzzle= TimeLockedPuzzleGenerator();
+  timeLockedPuzzle.n<==n;
+  timeLockedPuzzle.phi<==phi;
+  timeLockedPuzzle.t<==t;
+  timeLockedPuzzle.a<==a;
+  timeLockedPuzzle.msg<==msg;
+  puzzle===timeLockedPuzzle.puzzle;
+
   component mimcAttestation = MiMCSponge(2, 220, 1);
-  mimcAttestation.ins[0] <== msg;
+  mimcAttestation.ins[0] <== puzzle;
   mimcAttestation.ins[1] <== secret;
   mimcAttestation.k <== 0;
   msgAttestation <== mimcAttestation.outs[0];
@@ -72,15 +54,6 @@ z<==x+y;
   tempmsg <-- msg % 2;
   tempmsg * ( tempmsg - 1)===0;
 
-  component timeLockedPuzzle= TimeLockedPuzzleGenerator();
-  timeLockedPuzzle.n<==n;
-  timeLockedPuzzle.phi<==phi;
-  timeLockedPuzzle.t<==t;
-  timeLockedPuzzle.a<==a;
-  timeLockedPuzzle.msg<==msg;
-  puzzle<==timeLockedPuzzle.puzzle;
-
-
 }
 
-component main {public [r,hash1,hash2,hash3,encryptedmsg,n,t,a]}= Main();
+component main {public [r,hash1,hash2,hash3,n,t,a,puzzle]}= Main();

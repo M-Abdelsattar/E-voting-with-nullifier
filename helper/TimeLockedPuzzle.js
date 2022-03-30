@@ -15,7 +15,13 @@ function findM(msg,nbits)
 
   return m;
 }
-async function generate(m,tsec,s,nbits)
+function reverseMsg(m)
+{
+  let msg;
+  msg=bigintCryptoUtils.toZn(m,2)
+  return msg;
+}
+async function generateTLPuzzle(m,tsec,s,nbits)
 {
   t=s*tsec;
   p=await bigintCryptoUtils.prime(nbits)
@@ -35,10 +41,8 @@ async function generate(m,tsec,s,nbits)
 
   return [c,a,t,n,p,q,phi]
 }
-async function solve(c,a,t,n)
+async function solveTLPuzzle(c,a,t,n)
 {
-  var start_time = new Date().getTime()
-
   b=bigintCryptoUtils.toZn(a,n)
 
   for(var i=0;i<t;i++)
@@ -47,8 +51,6 @@ async function solve(c,a,t,n)
   }
 
   m=bigintCryptoUtils.toZn(c-b,n)
-
-  var runtime = (new Date().getTime() - start_time) / 1000;
   return m;
 }
 
@@ -68,4 +70,11 @@ function calculateS()
 
   s=BigInt("1000000000")/runtime
   return s
+}
+module.exports = {
+  findM,
+  reverseMsg,
+  generateTLPuzzle,
+  solveTLPuzzle,
+  calculateS
 }
